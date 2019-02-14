@@ -64,7 +64,7 @@ dev.up: | check-memory ## Bring up all services with host volumes
 	./programs/provision.sh cache >/dev/null
 
 dev.up.watchers: | check-memory ## Bring up asset watcher containers
-	docker-compose -f docker-compose-watchers.yml up -d
+	docker-compose -f docker-compose-watchers.yml -f docker-compose-themes-watchers.yml up -d
 
 dev.up.xqueue: | check-memory ## Bring up xqueue, assumes you already have lms running
 	docker-compose -f docker-compose.yml -f docker-compose-xqueue.yml -f docker-compose-host.yml up -d
@@ -200,10 +200,10 @@ xqueue_consumer-restart: ## Kill the XQueue development server. The watcher proc
 	docker exec -t edx.devstack.$* bash -c 'source /edx/app/$*/$*_env && cd /edx/app/$*/$*/ && make static'
 
 lms-static: ## Rebuild static assets for the LMS container
-	docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets'
+	docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets --theme-dirs=/edx/app/edx-themes/edx-platform/ --themes educateworkforce greermade'
 
-studio-static: ## Rebuild static assets for the Studio container
-	docker exec -t edx.devstack.studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets'
+studio-static: ## Rebuild static assets for the Studio container (educateworkforce,arm,belizeproject,bmw,caregiver,dlsc,greermade,mahcc,meep,nccte,nwgrc,ptc,scelect,scjru,ts)
+	docker exec -t edx.devstack.studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets --theme-dirs=/edx/app/edx-themes/edx-platform/ --themes educateworkforce greermade'
 
 static: | credentials-static discovery-static ecommerce-static lms-static studio-static ## Rebuild static assets for all service containers
 

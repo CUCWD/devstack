@@ -1,0 +1,9 @@
+version: "2.1"
+
+services:
+  lms_watcher:
+      volumes:
+      - ${DEVSTACK_WORKSPACE}/edx-themes:/edx/app/edx-themes:cached
+  studio_watcher:
+      volumes:
+      - ${DEVSTACK_WORKSPACE}/edx-themes:/edx/app/edx-themes:cached
