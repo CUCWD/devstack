@@ -2,6 +2,7 @@ version: "2.1"
 
 services:
   namenode:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.namenode"
     image: edxops/analytics_pipeline_hadoop_namenode:${OPENEDX_RELEASE:-latest}
     hostname: namenode
     environment:
@@ -17,6 +18,7 @@ services:
       - namenode_data:/hadoop/dfs/name
 
   datanode:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.datanode"
     image: edxops/analytics_pipeline_hadoop_datanode:${OPENEDX_RELEASE:-latest}
     hostname: datanode
     environment:
@@ -34,6 +36,7 @@ services:
       - datanode_data:/hadoop/dfs/data
 
   resourcemanager:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.resourcemanager"
     image: edxops/analytics_pipeline_hadoop_resourcemanager:${OPENEDX_RELEASE:-latest}
     hostname: resourcemanager
     environment:
@@ -54,6 +57,7 @@ services:
     command: ["/run.sh"]
 
   nodemanager:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.nodemanager"
     image: edxops/analytics_pipeline_hadoop_nodemanager:${OPENEDX_RELEASE:-latest}
     hostname: nodemanager
     environment:
@@ -78,6 +82,7 @@ services:
     command: ["/run.sh"]
 
   sparkmaster:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.sparkmaster"
     image: edxops/analytics_pipeline_spark_master:${OPENEDX_RELEASE:-latest}
     hostname: sparkmaster
     networks:
@@ -91,6 +96,7 @@ services:
       - 127.0.0.1:18080:18080     # spark history server
 
   sparkworker:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.sparkworker"
     image: edxops/analytics_pipeline_spark_worker:${OPENEDX_RELEASE:-latest}
     hostname: sparkworker
     depends_on:
@@ -105,6 +111,7 @@ services:
       - 127.0.0.1:8081:8081       # spark worker UI
 
   vertica:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline.vertica"
     image: iamamr/vertica:9.1.0-0
     hostname: vertica
     networks:
@@ -115,6 +122,7 @@ services:
       - vertica_data:/home/dbadmin/docker
 
   analyticspipeline:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.analytics_pipeline"
     image: edxops/analytics_pipeline:${OPENEDX_RELEASE:-latest}
     hostname: analyticspipeline
     volumes:

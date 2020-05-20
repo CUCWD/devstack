@@ -7,6 +7,7 @@ services:
       - MARKETING_SITE_ROOT="http://localhost:8080"
 
   marketing:
+    container_name: "edx.${COMPOSE_PROJECT_NAME:-devstack}.marketing"
     depends_on:
       - mysql
       - memcached
