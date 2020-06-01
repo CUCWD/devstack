@@ -63,7 +63,7 @@ dev.clone: ## Clone service repos to the parent directory
 	./repo.sh clone
 
 dev.provision.run: ## Provision all services with local mounted directories
-	DOCKER_COMPOSE_FILES="-f docker-compose.yml -f docker-compose-host.yml" $(WINPTY) bash ./provision.sh
+	DOCKER_COMPOSE_FILES="-f docker-compose.yml -f docker-compose-host.yml -f docker-compose-themes.yml" $(WINPTY) bash ./provision.sh
 
 dev.provision: | check-memory dev.clone dev.provision.run stop ## Provision dev environment with all services stopped
 
@@ -81,7 +81,7 @@ dev.repo.reset: ## Attempts to reset the local repo checkouts to the master work
 	$(WINPTY) bash ./repo.sh reset
 
 dev.up: | check-memory ## Bring up all services with host volumes
-	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-host.yml up -d'
+	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-host.yml -f docker-compose-themes.yml up -d'
 	@# Comment out this next line if you want to save some time and don't care about catalog programs
 	$(WINPTY) bash ./programs/provision.sh cache $(DEVNULL)
 
@@ -89,7 +89,7 @@ dev.up.watchers: | check-memory ## Bring up asset watcher containers
 	bash -c 'docker-compose -f docker-compose-watchers.yml up -d'
 
 dev.up.xqueue: | check-memory ## Bring up xqueue, assumes you already have lms running
-	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-xqueue.yml -f docker-compose-host.yml up -d'
+	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-xqueue.yml -f docker-compose-host.yml -f docker-compose-themes.yml up -d'
 
 dev.up.all: | dev.up dev.up.watchers ## Bring up all services with host volumes, including watchers
 
@@ -121,7 +121,7 @@ stop.xqueue: ## Stop the XQueue service container
 
 down: ## Remove all service containers and networks
 	(test -d .docker-sync && docker-sync clean) || true ## Ignore failure here
-	docker-compose -f docker-compose.yml -f docker-compose-watchers.yml -f docker-compose-xqueue.yml -f docker-compose-analytics-pipeline.yml down
+	docker-compose -f docker-compose.yml -f docker-compose-watchers.yml -f docker-compose-xqueue.yml -f docker-compose-analytics-pipeline.yml -f docker-compose-themes.yml down
 
 destroy: ## Remove all devstack-related containers, networks, and volumes
 	$(WINPTY) bash ./destroy.sh
@@ -221,11 +221,17 @@ xqueue_consumer-restart: ## Kill the XQueue development server. The watcher proc
 %-static: ## Rebuild static assets for the specified service container
 	docker-compose exec $* bash -c 'source /edx/app/$*/$*_env && cd /edx/app/$*/$*/ && make static'
 
+lms-sass: ## Rebuild sass assets for the LMS container
+	docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver compile_sass --debug --system=lms --theme-dirs /edx/app/edx-themes/edx-platform/ --themes educateworkforce'
+
 lms-static: ## Rebuild static assets for the LMS container
-	docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets'
+	docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets --theme-dirs=/edx/app/edx-themes/edx-platform/ --themes educateworkforce'
+
+studio-sass: ## Rebuild sass assets for the Studio container
+	docker-compose exec studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver compile_sass --debug --system=cms --theme-dirs /edx/app/edx-themes/edx-platform/ --themes educateworkforce'
 
 studio-static: ## Rebuild static assets for the Studio container
-	docker-compose exec studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets'
+	docker-compose exec studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && paver update_assets --theme-dirs=/edx/app/edx-themes/edx-platform/ --themes educateworkforce'
 
 static: | credentials-static discovery-static ecommerce-static lms-static studio-static ## Rebuild static assets for all service containers
 
@@ -261,13 +267,13 @@ mongo-shell: ## Run a shell on the mongo container
 dev.provision.analytics_pipeline: | check-memory dev.provision.analytics_pipeline.run stop.analytics_pipeline stop ## Provision analyticstack dev environment with all services stopped
 
 dev.provision.analytics_pipeline.run:
-	DOCKER_COMPOSE_FILES="-f docker-compose.yml -f docker-compose-host.yml -f docker-compose-analytics-pipeline.yml" ./provision-analytics-pipeline.sh
+	DOCKER_COMPOSE_FILES="-f docker-compose.yml -f docker-compose-host.yml -f docker-compose-themes.yml -f docker-compose-analytics-pipeline.yml" ./provision-analytics-pipeline.sh
 
 analytics-pipeline-shell: ## Run a shell on the analytics pipeline container
 	docker-compose exec analytics_pipeline env TERM=$(TERM) /edx/app/analytics_pipeline/devstack.sh open
 
 dev.up.analytics_pipeline: | check-memory ## Bring up analytics pipeline services
-	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-analytics-pipeline.yml -f docker-compose-host.yml up -d analyticspipeline'
+	bash -c 'docker-compose -f docker-compose.yml -f docker-compose-analytics-pipeline.yml -f docker-compose-host.yml -f docker-compose-themes.yml up -d analyticspipeline'
 
 pull.analytics_pipeline: ## Update analytics pipeline docker images
 	docker-compose -f docker-compose.yml -f docker-compose-analytics-pipeline.yml pull
